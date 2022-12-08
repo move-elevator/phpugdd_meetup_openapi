@@ -1,0 +1,19 @@
+version: "3.4"
+
+services:
+  database:
+    image: 'mysql:8.0'
+    container_name: skp-mysql
+    ports: ['3315:3306']
+    platform: 'linux/arm64/v8'
+    environment:
+      MYSQL_USER: phpug
+      MYSQL_DATABASE: phpug
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    networks:
+      - phpug
+
+networks:
+  phpug:
+    driver: bridge

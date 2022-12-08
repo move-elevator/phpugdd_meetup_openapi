@@ -1,0 +1,57 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        public: false
+        bind:
+            $schemaPath: '%kernel.project_dir%/config/schemas/open_api_schema.yaml'
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Api\Action\:
+        resource: '../src/Api/Action'
+        tags: [ 'controller.service_arguments' ]
+
+
+    App\Api\Action\AddUserAction:
+        arguments:
+            - '@validator_registry.basic'
+            - '@user.requestData.serializer'
+        tags: [ 'controller.service_arguments' ]
+    # Validator >
+    League\OpenAPIValidation\PSR7\ValidatorBuilder: ~
+
+    validator_registry.basic:
+        class: App\Registry\ValidatorRegistry
+        arguments: [
+            '@App\Validator\SchemaValidator',
+            '@App\Validator\UserUniqueInZip'
+        ]
+    # < Validator
+
+    # Serializer >
+    Symfony\Component\Serializer\Normalizer\ObjectNormalizer: ~
+    Symfony\Component\Serializer\Encoder\JsonEncoder: ~
+
+    user.requestData.serializer:
+        class: Symfony\Component\Serializer\Serializer
+        arguments: [
+            [ '@Symfony\Component\Serializer\Normalizer\ObjectNormalizer' ],
+            [ '@Symfony\Component\Serializer\Encoder\JsonEncoder' ]
+        ]
+    # < Serializer

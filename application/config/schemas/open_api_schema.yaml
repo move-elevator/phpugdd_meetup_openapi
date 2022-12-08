@@ -1,0 +1,119 @@
+openapi: 3.0.2
+info:
+  title: PHPUGDD Meetup Open Api Talk API
+  version: 0.0.1
+  description: 'Internal apis for communication between backend and frontend'
+servers:
+  - url: https://www.foo.bar/api
+    description: Production instance
+  - url: https://stage.foo.bar/api
+    description: Stage instance
+  - url: https://dev.foo.bar/api
+    description: Dev instance
+  - url: http://127.0.0.1:8811/
+    description: Local instance
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Email:
+      type: string
+      example: 'frank@müller.de'
+      allOf:
+        - pattern: '^[\-\w\W\.\" \+äöü]+@([\w\-äöü]+\.)+[\w\-]+$'
+paths:
+  /add-user:
+    post:
+      security:
+        - bearerAuth: [ ]
+      summary: 'Add user'
+      requestBody:
+        description: Request body
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - address
+              properties:
+                name:
+                  type: string
+                  example: 'Hans Muster'
+                contactPartner:
+                  type: string
+                  example: ''
+                  nullable: true
+                email:
+                  $ref: "#/components/schemas/Email"
+                telephone:
+                  type: string
+                  example: '0351/123456'
+                  nullable: true
+                address:
+                  type: object
+                  required:
+                    - streetNumber
+                    - zip
+                    - city
+                  properties:
+                    streetNumber:
+                      type: string
+                      example: 'Königsbrücker Str. 76'
+                    zip:
+                      type: string
+                      example: '01099'
+                      pattern: '^[0-9]{5}$'
+                    city:
+                      type: string
+                      example: 'Dresden'
+                    country:
+                      type: string
+                      example: 'Deutschland'
+      responses:
+        201:
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action:
+                    type: string
+                    enum:
+                      - created
+                  userId:
+                    type: string
+                    format: uuid
+                    example: 'ebb2f2d9-5885-440a-a512-e1ce284dbd76'
+        401:
+          description: JWT is expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: 'Token expired'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 1645702457
+                  message:
+                    type: string
+                    example: 'Mandatory data incompletely'

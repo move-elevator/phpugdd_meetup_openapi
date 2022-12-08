@@ -1,0 +1,4 @@
+actions:
+  resource: ../../src/Api/Action/
+  type: annotation
+  prefix: /
